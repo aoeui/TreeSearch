@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.6.0_23" class="java.beans.XMLDecoder"> 
+ <object class="edu.umd.isr.seil.brian.CustomizedTableModel"> 
+  <void property="dataVector"> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <string>1</string> 
+     </void> 
+     <void method="add"> 
+      <string>F1</string> 
+     </void> 
+     <void method="add"> 
+      <string>x1,x2,x3,x5</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <string>2</string> 
+     </void> 
+     <void method="add"> 
+      <string>F2</string> 
+     </void> 
+     <void method="add"> 
+      <string>x3,x6,x9,x12,x15</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <int>2</int> 
+     </void> 
+     <void method="add"> 
+      <string>F3</string> 
+     </void> 
+     <void method="add"> 
+      <string>x4,x7,x11</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <int>3</int> 
+     </void> 
+     <void method="add"> 
+      <string>F4</string> 
+     </void> 
+     <void method="add"> 
+      <string>x2,x8,x10</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <int>4</int> 
+     </void> 
+     <void method="add"> 
+      <string>F5</string> 
+     </void> 
+     <void method="add"> 
+      <string>x13,x14</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <int>5</int> 
+     </void> 
+     <void method="add"> 
+      <string>F6</string> 
+     </void> 
+     <void method="add"> 
+      <string>x14,x15,x3</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <int>6</int> 
+     </void> 
+     <void method="add"> 
+      <string>F7</string> 
+     </void> 
+     <void method="add"> 
+      <string>x2,x9,x10</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <string>8</string> 
+     </void> 
+     <void method="add"> 
+      <string>F8</string> 
+     </void> 
+     <void method="add"> 
+      <string>x5,x9</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <string>9</string> 
+     </void> 
+     <void method="add"> 
+      <string>F9</string> 
+     </void> 
+     <void method="add"> 
+      <string>x14,x7</string> 
+     </void> 
+    </object> 
+   </void> 
+  </void> 
+ </object> 
+ <object class="edu.umd.isr.seil.brian.CustomizedColumnModel"> 
+  <void property="tableColumns"> 
+   <void index="0"> 
+    <void property="maxWidth"> 
+     <int>30</int> 
+    </void> 
+    <void property="minWidth"> 
+     <int>30</int> 
+    </void> 
+   </void> 
+   <void index="1"> 
+    <void property="maxWidth"> 
+     <int>100</int> 
+    </void> 
+    <void property="minWidth"> 
+     <int>75</int> 
+    </void> 
+   </void> 
+   <void index="2"> 
+    <void property="minWidth"> 
+     <int>75</int> 
+    </void> 
+    <void property="preferredWidth"> 
+     <int>150</int> 
+    </void> 
+    <void property="width"> 
+     <int>198</int> 
+    </void> 
+   </void> 
+  </void> 
+ </object> 
+</java> 
