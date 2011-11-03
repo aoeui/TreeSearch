@@ -1,4 +1,6 @@
 package edu.umd.isr.seil.brian;
+import java.util.Collection;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -11,13 +13,14 @@ import javax.swing.table.DefaultTableModel;
 import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.umd.isr.seil.brian.treesearch.Configuration;
+import edu.umd.isr.seil.brian.treesearch.Configuration.Node;
 import edu.umd.isr.seil.brian.treesearch.ConfigurationSearch;
 import edu.umd.isr.seil.brian.treesearch.TreeSearch;
 
 public class ParamsDB {
 	private HashSet<String> paramsList;
 	private TreeMap<String,TreeSet<String>> functions;
-	private UndirectedSparseGraph<String, String> graph = new UndirectedSparseGraph<String, String>();
+	private UndirectedSparseGraph<String, String> graph = new UndirectedSparseGraph<String, String>();;
 	private DelegateTree<String,String> tree = new DelegateTree<String,String>();
 	private Configuration.ConfigurationBuilder builder;
 	private TreeSearch<ConfigurationSearch> searcher;
@@ -25,7 +28,6 @@ public class ParamsDB {
 	// Parse the input functions and their parameters
 	public boolean parse(DefaultTableModel dtm, JFrame frame){
 		paramsList = new HashSet<String>();
-		graph = new UndirectedSparseGraph<String, String>();
 		functions = new TreeMap<String,TreeSet<String>>();
 		
 		for(int i = 0; i < dtm.getRowCount(); i++){
@@ -41,7 +43,6 @@ public class ParamsDB {
 			for(String token : result){
 				if(!paramsList.contains(token)){
 					paramsList.add(token);
-					graph.addVertex(token);
 				}
 			}
 			
@@ -55,15 +56,6 @@ public class ParamsDB {
 				builder.setClique(set);
 			}	    
 			searcher = Configuration.initSearch(builder.build());
-			
-			// Add edges to the graph
-			for(String src:result){
-				for(String dst:result){
-					if(src.compareTo(dst) < 0){
-						graph.addEdge(src+"2"+dst, src,dst);
-					}
-				}
-			}
 		}
 		String succMsg = "All " + paramsList.size() + " parameters are parsed successfully!";
 		JOptionPane.showMessageDialog(frame, succMsg, "Parse Successfully", JOptionPane.INFORMATION_MESSAGE);
@@ -100,6 +92,9 @@ public class ParamsDB {
 	
 	// Access methods
 	public UndirectedSparseGraph<String, String> getGraph(){
+		if(searcher != null){
+			constructGraph();
+		}
 		return graph;
 	}
 	
@@ -108,6 +103,61 @@ public class ParamsDB {
 	}
 	
 	public DelegateTree<String,String> getTree(){
+		if(searcher != null){
+			constructTree();
+		}
 		return tree;
+	}
+	
+	private void constructTree(){
+		TreeMap<TreeSet<String>,TreeSet<String>> rawTree = searcher.root.data.getTree();
+		tree = new DelegateTree<String,String>();
+		for(Map.Entry<TreeSet<String>,TreeSet<String>> entry : rawTree.entrySet()){
+			TreeSet<String> childSet = entry.getKey();
+			TreeSet<String> parentSet = entry.getValue();
+			String childName = childSet.toString();
+			tree.addVertex(childName);
+			if(parentSet != null){
+				String parentName = parentSet.toString();
+				tree.addVertex(parentName);
+				tree.addEdge(parentName+"2"+childName, parentName, childName);
+			}
+		}
+	}
+	
+	private void constructGraph(){
+		Configuration config = searcher.root.data.reduced;
+		graph = new UndirectedSparseGraph<String, String>();
+		for(String name : config.nodes.keys()){
+			if(!config.eliminated.containsKey(name)){
+				graph.addVertex(name);
+				for(String nbr : config.nodes.get(name).neighbors){
+					if(name.compareTo(nbr) < 0){
+						graph.addEdge(name+"2"+nbr, name,nbr);
+					}else if(name.compareTo(nbr) > 0){
+						graph.addEdge(nbr+"2"+name, nbr,name);
+					}
+				}
+			}
+		}
+	}
+	
+	public HashSet<String> getFinishedParams(){
+		return new HashSet<String>(searcher.root.data.reduced.eliminated.keys());
+	}
+	
+	public HashSet<String> getRestParams(){
+		HashSet<String> result = new HashSet<String>(searcher.root.data.reduced.nodes.keys());
+		result.removeAll(searcher.root.data.reduced.eliminated.keys());
+		return result;
+	}
+	
+	public double getTreeWidth(){
+		if(searcher != null){
+			double score = searcher.getMinPath().getScore();
+			return Math.log(1/score);
+		}else{
+			return -1;
+		}
 	}
 }

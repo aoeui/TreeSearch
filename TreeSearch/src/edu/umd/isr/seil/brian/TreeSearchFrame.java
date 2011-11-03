@@ -125,17 +125,6 @@ public class TreeSearchFrame extends JFrame {
 		overallPane.setContinuousLayout(true);
 		contentPane.add(overallPane, BorderLayout.CENTER);
 		Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>(){
-			/*public Paint transform(String node){
-				if(paramsDB.isFinished(node)){
-					return Color.green;
-				}else if(paramsDB.isSelected(node)){
-					return Color.magenta;
-				}else if(paramsDB.isVisited(node)){
-					return Color.cyan;
-				}else{
-					return Color.lightGray;
-				}
-			}*/
 			public Paint transform(String node){
 				return Color.lightGray;
 			}
@@ -252,7 +241,6 @@ public class TreeSearchFrame extends JFrame {
 		JList finishedNodeList = new JList();
 		finishedListModel = new DefaultListModel();
 		listPanel.setLayout(new GridLayout(0, 2, 0, 0));
-		finishedNodeList.setEnabled(false);
 		finishedNodeList.setModel(finishedListModel);
 		finishedNodeList.setToolTipText("Parameters that have been processed");
 		finishedNodeList.setVisibleRowCount(15);
@@ -639,14 +627,23 @@ public class TreeSearchFrame extends JFrame {
 				
 				boolean success = paramsDB.parse(funcTableModel,TreeSearchFrame.this); // Parse the user input
 				if(success){
-					// Update the list of unprocessed parameters
-					for(String item:paramsDB.getAllParams()){
+					// Update the list of unprocessed and processed parameters
+					restListModel.removeAllElements();
+					finishedListModel.removeAllElements();
+					for(String item:paramsDB.getRestParams()){
 						restListModel.addElement(item);
+					}
+					for(String item:paramsDB.getFinishedParams()){
+						finishedListModel.addElement(item);
 					}
 					
 					// Update the graph viewer
 					graphViewer.getGraphLayout().setGraph(paramsDB.getGraph());
 					graphViewer.repaint();
+					
+					// Update the tree viewer
+					treeViewer.getGraphLayout().setGraph(paramsDB.getTree());
+					treeViewer.repaint();
 				}
 			}
 		});
@@ -676,3 +673,5 @@ public class TreeSearchFrame extends JFrame {
 		});
 	}
 }
+
+
