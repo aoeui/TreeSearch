@@ -72,11 +72,13 @@ public class Configuration {
     if (eliminated.containsKey(name)) throw new RuntimeException();
     RbTree<String,Node> newNodes = nodes;
     Node victim = nodes.get(name);
-    RbSet<String> neighborhood = victim.neighbors;
-    for (RbTreeIterator<String,Void> neighborIt = victim.neighbors.rbTreeIterator(); !neighborIt.isEnd(); neighborIt = neighborIt.next()) {
-      if (eliminated.containsKey(neighborIt.key())) continue;
-      
-      newNodes = newNodes.put(neighborIt.key(), nodes.get(neighborIt.key()).addNeighbors(neighborhood));
+    RbSet<String> neighborhood = RbSet.<String>empty();
+    for (String neighborName : victim.neighbors) {
+      if (eliminated.containsKey(neighborName)) continue;
+      neighborhood = neighborhood.add(neighborName);
+    }
+    for (String neighbor : neighborhood) {
+      newNodes = newNodes.put(neighbor, nodes.get(neighbor).addNeighbors(neighborhood));
     }
     return new Configuration(newNodes, eliminated.put(name, eliminated.size()));
   }

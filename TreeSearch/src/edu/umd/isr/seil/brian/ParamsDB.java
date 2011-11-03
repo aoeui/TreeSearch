@@ -1,5 +1,5 @@
 package edu.umd.isr.seil.brian;
-import java.util.Collection;
+
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.HashSet;
@@ -12,10 +12,9 @@ import javax.swing.table.DefaultTableModel;
 
 import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
+
 import edu.umd.isr.seil.brian.treesearch.Configuration;
-import edu.umd.isr.seil.brian.treesearch.Configuration.Node;
-import edu.umd.isr.seil.brian.treesearch.ConfigurationSearch;
-import edu.umd.isr.seil.brian.treesearch.TreeSearch;
+import edu.umd.isr.seil.brian.treesearch.ConfigurationManager;
 
 public class ParamsDB {
 	private HashSet<String> paramsList;
@@ -23,7 +22,8 @@ public class ParamsDB {
 	private UndirectedSparseGraph<String, String> graph = new UndirectedSparseGraph<String, String>();;
 	private DelegateTree<String,String> tree = new DelegateTree<String,String>();
 	private Configuration.ConfigurationBuilder builder;
-	private TreeSearch<ConfigurationSearch> searcher;
+	private ConfigurationManager manager;
+	// private TreeSearch<ConfigurationSearch> searcher;
 	
 	// Parse the input functions and their parameters
 	public boolean parse(DefaultTableModel dtm, JFrame frame){
@@ -55,7 +55,8 @@ public class ParamsDB {
 		for (TreeSet<String> set : functions.values()) {
 			builder.setClique(set);
 		}
-    	searcher = Configuration.initSearch(builder.build());
+		manager = new ConfigurationManager(builder.build());
+		manager.start();
 
 		String succMsg = "All " + paramsList.size() + " parameters are parsed successfully!";
 		JOptionPane.showMessageDialog(frame, succMsg, "Parse Successfully", JOptionPane.INFORMATION_MESSAGE);
@@ -92,7 +93,7 @@ public class ParamsDB {
 	
 	// Access methods
 	public UndirectedSparseGraph<String, String> getGraph(){
-		if(searcher != null){
+		if(manager != null){
 			constructGraph();
 		}
 		return graph;
@@ -103,14 +104,14 @@ public class ParamsDB {
 	}
 	
 	public DelegateTree<String,String> getTree(){
-		if(searcher != null){
+		if(manager != null){
 			constructTree();
 		}
 		return tree;
 	}
 
 	private void constructTree(){
-		TreeMap<TreeSet<String>,TreeSet<String>> rawTree = searcher.root.data.getTree();
+		TreeMap<TreeSet<String>,TreeSet<String>> rawTree = manager.getCurrentTree();
 		tree = new DelegateTree<String,String>();
 		for(Map.Entry<TreeSet<String>,TreeSet<String>> entry : rawTree.entrySet()){
 			TreeSet<String> childSet = entry.getKey();
@@ -126,7 +127,7 @@ public class ParamsDB {
 	}
 	
 	private void constructGraph(){
-		Configuration config = searcher.root.data.reduced;
+		Configuration config = manager.getCurrentConfiguration();
 		graph = new UndirectedSparseGraph<String, String>();
 		for(String name : config.nodes.keys()){
 			if(!config.eliminated.containsKey(name)){
@@ -143,19 +144,19 @@ public class ParamsDB {
 	}
 	
 	public HashSet<String> getFinishedParams(){
-		return new HashSet<String>(searcher.root.data.reduced.eliminated.keys());
+		return new HashSet<String>(manager.getCurrentConfiguration().eliminated.keys());
 	}
 	
 	public HashSet<String> getRestParams(){
-		HashSet<String> result = new HashSet<String>(searcher.root.data.reduced.nodes.keys());
-		result.removeAll(searcher.root.data.reduced.eliminated.keys());
+	    Configuration config = manager.getCurrentConfiguration();
+		HashSet<String> result = new HashSet<String>(config.nodes.keys());
+		result.removeAll(config.eliminated.keys());
 		return result;
 	}
 	
 	public double getTreeWidth(){
-		if(searcher != null){
-			double score = searcher.getMinPath().getScore();
-			return Math.log(1/score);
+		if(manager != null){
+			return manager.getWidth();
 		}else{
 			return -1;
 		}

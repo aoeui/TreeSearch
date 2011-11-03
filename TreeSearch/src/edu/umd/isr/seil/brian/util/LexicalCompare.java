@@ -1,8 +1,24 @@
 package edu.umd.isr.seil.brian.util;
 
+import java.util.Comparator;
 import java.util.Iterator;
 
 public class LexicalCompare {
+  @SuppressWarnings("unchecked")
+  public static <S extends Comparable<? super S>> LexicalComparator<S> comparatorInstance() {
+    return LexicalComparator.INSTANCE;
+  }
+  
+  public static class LexicalComparator<S extends Comparable<? super S>> implements Comparator<Iterable<S>> {
+    @SuppressWarnings("rawtypes")
+    public final static LexicalComparator INSTANCE = new LexicalComparator();
+    private LexicalComparator() {}
+    @Override
+    public int compare(Iterable<S> o1, Iterable<S> o2) {
+      return LexicalCompare.compare(o1, o2);
+    }
+  }
+  
   public static boolean areEqual(Iterator<?> aIt, Iterator<?> bIt) {
     boolean foundDiff = false;
     while (!foundDiff && aIt.hasNext() && bIt.hasNext()) {

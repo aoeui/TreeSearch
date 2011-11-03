@@ -53,7 +53,7 @@ public class ConfigurationSearch implements Program.Search<ConfigurationSearch> 
     // have all cliques, sort them by rank
     Collections.sort(cliques, new CliqueRanker(reduced.eliminated));
     
-    TreeMap<TreeSet<String>,TreeSet<String>> tree = new TreeMap<TreeSet<String>,TreeSet<String>>();
+    TreeMap<TreeSet<String>,TreeSet<String>> tree = new TreeMap<TreeSet<String>,TreeSet<String>>(LexicalCompare.<String>comparatorInstance());
     tree.put(cliques.get(0), null);
     for (int i = 1; i < cliques.size(); i++) {
       TreeSet<String> clique = cliques.get(i);

@@ -40,5 +40,6 @@ public class TestSearch {
       double width = Math.log(1/score);
       System.out.println("Best Score = " + score + " (width = " + width + ")");
     }
+    System.out.println(searcher.root.data.reduced);
   }
 }

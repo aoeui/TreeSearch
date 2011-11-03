@@ -56,8 +56,6 @@ public class TreeSearch<S extends Program.Search<S>> {
     double aggregateSum;
     int aggregateCount;
     
-    ArrayList<Node> children;
-
     public Node(Fork parent, int id) {
       this.parent = parent;
       this.id = id;
@@ -89,7 +87,10 @@ public class TreeSearch<S extends Program.Search<S>> {
       this.branch = branch;
       children = new ArrayList<Node>();
       for (int i = 0; i < branch.getNumChoices(); i++) {
-        children.add(new Terminal(branch.choose(i), this, i));
+        children.add(null);
+      }
+      for (int i = 0; i < branch.getNumChoices(); i++) {
+        new Terminal(branch.choose(i), this, i);
       }
     }
     

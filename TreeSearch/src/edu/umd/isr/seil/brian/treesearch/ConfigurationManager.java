@@ -2,6 +2,7 @@ package edu.umd.isr.seil.brian.treesearch;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import edu.umd.isr.seil.brian.treesearch.Program.Branch;
 import edu.umd.isr.seil.brian.treesearch.Program.Terminal;
@@ -9,13 +10,15 @@ import edu.umd.isr.seil.brian.util.Ptr;
 import edu.umd.isr.seil.brian.util.RbTreeIterator;
 import edu.umd.isr.seil.brian.util.Stack;
 
-public class ConfigurationManager {
+public class ConfigurationManager implements Runnable {
   public final Configuration root;
   // Add an LRU here.
   TreeMap<Stack<String>,TreeSearch<ConfigurationSearch>> cache;
 
   Stack<String> currentChoices;
   TreeSearch<ConfigurationSearch> currentSearcher;
+  
+  boolean isGo = true;
   
   public ConfigurationManager(Configuration root) {
     this.root = root;
@@ -28,10 +31,38 @@ public class ConfigurationManager {
     cache.put(currentChoices, currentSearcher);
   }
   
-  public TreeSearch<ConfigurationSearch> getCurrentSearcher() { return currentSearcher; }
-  public Stack<String> getCurrentChoices() { return currentChoices; }
+  public synchronized Configuration getCurrentConfiguration() {
+    return currentSearcher.root.data.reduced;
+  }
   
-  public ArrayList<String> getAvailableChoices() {
+  public void start() {
+    new Thread(this).start();
+  }
+  
+  public synchronized void stop() {
+    isGo = false;
+  }
+  
+  public void run() {
+    while (isGo) {
+      synchronized (this) {
+        currentSearcher.runEpoch();
+      }
+    }
+  }
+  
+  public synchronized TreeSearch<ConfigurationSearch> getCurrentSearcher() { return currentSearcher; }
+  public synchronized Stack<String> getCurrentChoices() { return currentChoices; }
+
+  public synchronized TreeMap<TreeSet<String>,TreeSet<String>> getCurrentTree() {
+    return currentSearcher.getMinPath().data.getTree();
+  }
+  
+  public synchronized int getWidth() {
+    return (int)Math.log(1/currentSearcher.getMinPath().getScore());
+  }
+  
+  public synchronized ArrayList<String> getAvailableChoices() {
     Configuration config = currentSearcher.root.data.reduced;
     ArrayList<String> rv = new ArrayList<String>();
     for (RbTreeIterator<String,?> it = config.nodes.iterator(); !it.isEnd(); it = it.next()) {
@@ -41,7 +72,7 @@ public class ConfigurationManager {
     return rv;
   }
   
-  public void setNextChoice(final String str) {
+  public synchronized void setNextChoice(final String str) {
     Stack<String> nextKey = currentChoices.push(str);
     final Ptr<TreeSearch<ConfigurationSearch>> searcher = new Ptr<TreeSearch<ConfigurationSearch>>();
     searcher.value = cache.get(nextKey);
@@ -63,11 +94,11 @@ public class ConfigurationManager {
     currentChoices = nextKey;
   }
   
-  public void pop() {
+  public synchronized void pop() {
     skipTo(currentChoices.tail());
   }
   
-  public void skipTo(Stack<String> choice) {
+  public synchronized void skipTo(Stack<String> choice) {
     TreeSearch<ConfigurationSearch> searcher = cache.get(choice);
     if (searcher != null) {
       currentSearcher = searcher;
@@ -96,7 +127,7 @@ public class ConfigurationManager {
   }
   
   // the top of the stack should be the next choice (backwards the usual ordering)
-  public void chooseSequence(Stack<String> choices) {
+  public synchronized void chooseSequence(Stack<String> choices) {
     if (choices.isEmpty()) return;
     setNextChoice(choices.head());
     chooseSequence(choices.tail());
