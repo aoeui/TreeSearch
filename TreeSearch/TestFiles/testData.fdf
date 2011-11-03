@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.6.0_23" class="java.beans.XMLDecoder"> 
+ <object class="edu.umd.isr.seil.brian.CustomizedTableModel"> 
+  <void property="dataVector"> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <string>1</string> 
+     </void> 
+     <void method="add"> 
+      <string>f</string> 
+     </void> 
+     <void method="add"> 
+      <string>a,b,c,d</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <string>2</string> 
+     </void> 
+     <void method="add"> 
+      <string>g</string> 
+     </void> 
+     <void method="add"> 
+      <string>d,e</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <string>3</string> 
+     </void> 
+     <void method="add"> 
+      <string>h</string> 
+     </void> 
+     <void method="add"> 
+      <string>e,f</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="add"> 
+    <object class="java.util.Vector"> 
+     <void method="add"> 
+      <string>4</string> 
+     </void> 
+     <void method="add"> 
+      <string>x</string> 
+     </void> 
+     <void method="add"> 
+      <string>f,a</string> 
+     </void> 
+    </object> 
+   </void> 
+  </void> 
+ </object> 
+ <object class="edu.umd.isr.seil.brian.CustomizedColumnModel"> 
+  <void property="tableColumns"> 
+   <void index="0"> 
+    <void property="maxWidth"> 
+     <int>30</int> 
+    </void> 
+    <void property="minWidth"> 
+     <int>30</int> 
+    </void> 
+   </void> 
+   <void index="1"> 
+    <void property="maxWidth"> 
+     <int>100</int> 
+    </void> 
+    <void property="minWidth"> 
+     <int>75</int> 
+    </void> 
+   </void> 
+   <void index="2"> 
+    <void property="minWidth"> 
+     <int>75</int> 
+    </void> 
+    <void property="preferredWidth"> 
+     <int>150</int> 
+    </void> 
+    <void property="width"> 
+     <int>198</int> 
+    </void> 
+   </void> 
+  </void> 
+ </object> 
+</java> 

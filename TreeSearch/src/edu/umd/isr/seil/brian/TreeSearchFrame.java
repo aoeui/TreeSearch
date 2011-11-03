@@ -83,7 +83,7 @@ public class TreeSearchFrame extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		try {
+		/* try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 		} catch (ClassNotFoundException e1) {
 			System.err.println("Fail to initiate the Windows Look and Feel.");
@@ -97,7 +97,7 @@ public class TreeSearchFrame extends JFrame {
 		} catch (UnsupportedLookAndFeelException e1) {
 			System.err.println("Fail to initiate the Windows Look and Feel.");
 			e1.printStackTrace();
-		}
+		} */
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {

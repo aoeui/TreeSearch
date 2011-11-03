@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import edu.umd.isr.seil.brian.util.Joiner;
 import edu.umd.isr.seil.brian.util.RbSet;
 import edu.umd.isr.seil.brian.util.RbTree;
 import edu.umd.isr.seil.brian.util.RbTreeIterator;
@@ -21,6 +22,23 @@ public class Configuration {
     } else {
       return new TreeSearch<ConfigurationSearch>(new Program.Branch<ConfigurationSearch>(null, 0, search));
     }
+  }
+  
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    boolean isFirst = true;
+    for (RbTreeIterator<String,Node> it = nodes.iterator(); !it.isEnd(); it = it.next()) {
+      if (isFirst) isFirst = false;
+      else builder.append(", ");
+      builder.append(it.key());
+      Integer elim = eliminated.get(it.key());
+      if (elim != null) builder.append('(').append(elim).append(')');
+      builder.append(" -> {");
+      Node node = it.value();
+      builder.append(Joiner.join(node.neighbors,", "));
+      builder.append("}");
+    }
+    return builder.toString();
   }
 
   private Configuration(RbTree<String,Node> nodes) {
@@ -56,6 +74,8 @@ public class Configuration {
     Node victim = nodes.get(name);
     RbSet<String> neighborhood = victim.neighbors;
     for (RbTreeIterator<String,Void> neighborIt = victim.neighbors.rbTreeIterator(); !neighborIt.isEnd(); neighborIt = neighborIt.next()) {
+      if (eliminated.containsKey(neighborIt.key())) continue;
+      
       newNodes = newNodes.put(neighborIt.key(), nodes.get(neighborIt.key()).addNeighbors(neighborhood));
     }
     return new Configuration(newNodes, eliminated.put(name, eliminated.size()));
@@ -119,8 +139,8 @@ public class Configuration {
       this.neighbors = neighbors;
     }
     
-    public Node addNeighbors(RbSet<String> neighbors) {
-      return new Node(name, neighbors.union(neighbors.contains(name) ? neighbors.remove(name) : neighbors));      
+    public Node addNeighbors(RbSet<String> newNeighbors) {
+      return new Node(name, neighbors.union(newNeighbors.contains(name) ? newNeighbors.remove(name) : newNeighbors));      
     }
     
     public boolean isConnected(String id) {
@@ -137,6 +157,13 @@ public class Configuration {
         }
       }
       return true;
+    }
+    
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append(name).append(" : ");
+      builder.append(Joiner.join(neighbors,", "));
+      return builder.toString();
     }
   }
   

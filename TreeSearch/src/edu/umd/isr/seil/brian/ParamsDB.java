@@ -49,14 +49,14 @@ public class ParamsDB {
 			// Store the function information
 			functions.put((String)dtm.getValueAt(i, 1), result);
 			
-			
-			// Initiate the algorithm
-			builder = new Configuration.ConfigurationBuilder(paramsList);
-			for (TreeSet<String> set : functions.values()) {
-				builder.setClique(set);
-			}	    
-			searcher = Configuration.initSearch(builder.build());
+		}	
+		// Initiate the algorithm
+		builder = new Configuration.ConfigurationBuilder(paramsList);
+		for (TreeSet<String> set : functions.values()) {
+			builder.setClique(set);
 		}
+    	searcher = Configuration.initSearch(builder.build());
+
 		String succMsg = "All " + paramsList.size() + " parameters are parsed successfully!";
 		JOptionPane.showMessageDialog(frame, succMsg, "Parse Successfully", JOptionPane.INFORMATION_MESSAGE);
 		return true;
@@ -108,7 +108,7 @@ public class ParamsDB {
 		}
 		return tree;
 	}
-	
+
 	private void constructTree(){
 		TreeMap<TreeSet<String>,TreeSet<String>> rawTree = searcher.root.data.getTree();
 		tree = new DelegateTree<String,String>();
