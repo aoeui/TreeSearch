@@ -56,7 +56,6 @@ public class ConfigurationManager implements Runnable {
 
   public synchronized TreeMap<TreeSet<String>,TreeSet<String>> getCurrentTree() {
     TreeMap<TreeSet<String>,TreeSet<String>> rv = currentSearcher.getMinPath().data.getTree();
-    System.out.println(rv);
     return rv;
   }
   
