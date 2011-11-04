@@ -11,7 +11,9 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 import edu.uci.ics.jung.graph.DelegateTree;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
+import edu.uci.ics.jung.graph.util.EdgeType;
 
 import edu.umd.isr.seil.brian.treesearch.Configuration;
 import edu.umd.isr.seil.brian.treesearch.ConfigurationManager;
@@ -111,19 +113,20 @@ public class ParamsDB {
 	}
 
 	private void constructTree(){
-		TreeMap<TreeSet<String>,TreeSet<String>> rawTree = manager.getCurrentTree();
-		tree = new DelegateTree<String,String>();
-		for(Map.Entry<TreeSet<String>,TreeSet<String>> entry : rawTree.entrySet()){
+		TreeMap<TreeSet<String>,TreeSet<String>> edgeList = manager.getCurrentTree();
+		DirectedSparseGraph<String, String> rawTree = new DirectedSparseGraph<String, String>();
+		for(Map.Entry<TreeSet<String>,TreeSet<String>> entry : edgeList.entrySet()){
 			TreeSet<String> childSet = entry.getKey();
 			TreeSet<String> parentSet = entry.getValue();
 			String childName = childSet.toString();
-			tree.addVertex(childName);
+			rawTree.addVertex(childName);
 			if(parentSet != null){
 				String parentName = parentSet.toString();
-				tree.addVertex(parentName);
-				tree.addEdge(parentName+"2"+childName, parentName, childName);
+				rawTree.addVertex(parentName);
+				rawTree.addEdge(parentName+"2"+childName, parentName, childName, EdgeType.DIRECTED);
 			}
 		}
+		tree = new DelegateTree<String,String>(rawTree);
 	}
 	
 	private void constructGraph(){

@@ -130,10 +130,10 @@ public class TreeSearchFrame extends JFrame {
 			}
 		};
 		DefaultModalGraphMouse<String,String> gm = new DefaultModalGraphMouse<String,String>();
-		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+		gm.setMode(ModalGraphMouse.Mode.PICKING);
 		
 		DefaultModalGraphMouse<String,String> gmTree = new DefaultModalGraphMouse<String,String>();
-		gmTree.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+		gmTree.setMode(ModalGraphMouse.Mode.PICKING);
 		
 		JSplitPane leftSplitPane = new JSplitPane();
 		leftSplitPane.setOneTouchExpandable(true);
@@ -345,7 +345,7 @@ public class TreeSearchFrame extends JFrame {
 		});
 		opMode.setMaximumSize(new Dimension(50, 1800));
 		opMode.setToolTipText("Select to use the mouse to move the whole graph, or pick on node");
-		opMode.setModel(new DefaultComboBoxModel(new String[] {"Drag Graph", "Pick Node"}));
+		opMode.setModel(new DefaultComboBoxModel(new String[] {"Pick Node","Drag Graph"}));
 		opMode.setSelectedIndex(0);
 		graphCtrlPanel.add(opMode);
 		
@@ -365,7 +365,7 @@ public class TreeSearchFrame extends JFrame {
 		});
 		opTreeMode.setMaximumSize(new Dimension(50, 1800));
 		opTreeMode.setToolTipText("Select to use the mouse to move the whole graph, or pick on node");
-		opTreeMode.setModel(new DefaultComboBoxModel(new String[] {"Drag Graph", "Pick Node"}));
+		opTreeMode.setModel(new DefaultComboBoxModel(new String[] {"Pick Node", "Drag Graph"}));
 		opTreeMode.setSelectedIndex(0);
 		treeCtrlPanel.add(opTreeMode);
 		

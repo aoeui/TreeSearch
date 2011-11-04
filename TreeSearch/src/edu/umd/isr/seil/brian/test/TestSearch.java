@@ -34,12 +34,14 @@ public class TestSearch {
       builder.setClique(set);
     }
     TreeSearch<ConfigurationSearch> searcher = Configuration.initSearch(builder.build());
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
       searcher.runEpoch();
       double score = searcher.getMinPath().getScore();
       double width = Math.log(1/score);
       System.out.println("Best Score = " + score + " (width = " + width + ")");
+      System.out.println(searcher);
     }
-    System.out.println(searcher.root.data.reduced);
+    System.out.println(searcher.getMinPath().data.reduced);
+    System.out.println(searcher.getMinConfig().getTree());
   }
 }

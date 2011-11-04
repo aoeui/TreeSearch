@@ -55,7 +55,9 @@ public class ConfigurationManager implements Runnable {
   public synchronized Stack<String> getCurrentChoices() { return currentChoices; }
 
   public synchronized TreeMap<TreeSet<String>,TreeSet<String>> getCurrentTree() {
-    return currentSearcher.getMinPath().data.getTree();
+    TreeMap<TreeSet<String>,TreeSet<String>> rv = currentSearcher.getMinPath().data.getTree();
+    System.out.println(rv);
+    return rv;
   }
   
   public synchronized int getWidth() {

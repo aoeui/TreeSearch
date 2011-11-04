@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
+import edu.umd.isr.seil.brian.util.Indenter;
 import edu.umd.isr.seil.brian.util.Ptr;
 
 public class TreeSearch<S extends Program.Search<S>> {
@@ -18,7 +19,25 @@ public class TreeSearch<S extends Program.Search<S>> {
   
   public TreeSearch(Program<S> prog) {
     this.root = prog;
-    this.rootNode = new Terminal(prog, null, 0);
+    final Ptr<Node> rootPtr = new Ptr<Node>();
+    prog.accept(new Program.Visitor<S>() {
+      @Override
+      public void visitBranch(Program.Branch<S> branch) {
+        rootPtr.value = new Fork(branch, null, 0);
+      }
+      @Override
+      public void visitTerminal(Program.Terminal<S> terminal) {
+        rootPtr.value = new Terminal(terminal, null, 0);
+      }
+    });
+    this.rootNode = rootPtr.value;
+  }
+  
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append(minPath.data).append("\n");
+    builder.append(rootNode);
+    return builder.toString();
   }
   
   public Program.Terminal<S> getMinPath() {
@@ -43,7 +62,7 @@ public class TreeSearch<S extends Program.Search<S>> {
     if (minPath == null) {
       minPath = term;
     } else {
-      if (minPath.getScore() > term.getScore()) {
+      if (minPath.getScore() < term.getScore()) {
         minPath = term;
       }
     }
@@ -75,6 +94,8 @@ public class TreeSearch<S extends Program.Search<S>> {
     public abstract void prune(int remaining);
     
     public abstract boolean sample(boolean isBlind, int remaining);
+    
+    abstract void indent(Indenter indenter);
   }
   
   public class Fork extends Node {
@@ -112,10 +133,11 @@ public class TreeSearch<S extends Program.Search<S>> {
       int childCount = 0;
       int childSamples = 0;
       for (Node child : children) {
-        if (child == null) continue;
+        Double thisMean = child.getMean();
+        if (thisMean == null) continue;
         childCount++;
         childSamples += child.getTotalCount();
-        sum += child.getMean();
+        sum += thisMean;
       }
       meanDirty = false;
       if (childCount > 0) {
@@ -221,6 +243,21 @@ public class TreeSearch<S extends Program.Search<S>> {
         }
       }
     }
+    
+    public String toString() {
+      Indenter indenter = new Indenter();
+      indent(indenter);
+      return indenter.toString();
+    }
+    
+    void indent(Indenter indenter) {
+      indenter.println(branch.data);
+      indenter.indent();
+      for (Node child : children) {
+        child.indent(indenter);
+      }
+      indenter.deindent();
+    }
   }
   
   public class Terminal extends Node {
@@ -273,5 +310,12 @@ public class TreeSearch<S extends Program.Search<S>> {
     
     // Terminals cannot be pruned further
     public void prune(int remaining) {}
+    
+    public String toString() {
+      return prog.data.toString();
+    }
+    void indent(Indenter indenter) {
+      indenter.println(this);
+    }
   }
 }

@@ -22,36 +22,45 @@ public class ConfigurationSearch implements Program.Search<ConfigurationSearch> 
     return reduced.nodes.size() - reduced.eliminated.size();
   }
   
+  public String toString() {
+    return reduced.toString();
+  }
+  
   // Returns a graph (a mapping from nodes to their parent pointers)
   // Assumes that getNumChoices returns 0.
   public TreeMap<TreeSet<String>,TreeSet<String>> getTree() {
     if (getNumChoices() > 0) throw new RuntimeException();
 
-    ArrayList<TreeSet<String>> cliques = new ArrayList<TreeSet<String>>();
+    String[] eo = new String[reduced.nodes.size()];
     for (RbTreeIterator<String,Integer> elimIt = reduced.eliminated.iterator(); !elimIt.isEnd(); elimIt = elimIt.next()) {
-      int rank = elimIt.value();
+      eo[elimIt.value()] = elimIt.key();
+    }    
+    ArrayList<TreeSet<String>> cliques = new ArrayList<TreeSet<String>>();
+    for (int i = 0; i < eo.length; i++) {
+      String elim = eo[i];
       TreeSet<String> clique = new TreeSet<String>();
-      Configuration.Node node = reduced.nodes.get(elimIt.key());
-      for (String str : node.neighbors) {
-        if (reduced.eliminated.get(str) < rank) continue;
-        clique.add(str);
+      Configuration.Node next = reduced.nodes.get(elim);
+      clique.add(next.name);
+      for (String neighbor : next.neighbors) {
+        if (reduced.eliminated.get(neighbor) < i) continue;
+        clique.add(neighbor);
       }
-      boolean found = false;
-      for (int i = 0; i < cliques.size(); i++) {
-        TreeSet<String> cliquei = cliques.get(i);
-        if (cliquei.containsAll(clique)) {
-          found = true;
-          break;
-        } else if (clique.containsAll(cliquei)) {
-          found = true;
-          cliques.set(i, clique);
+      cliques.add(clique);
+    }
+    for (int i = cliques.size()-1; i >= 0; i--) {
+      for (int j = 0; j < cliques.size(); j++) {
+        if (i == j) continue;
+        
+        if (cliques.get(j).containsAll(cliques.get(i))) {
+          cliques.remove(i);
           break;
         }
       }
-      if (!found) cliques.add(clique);
     }
+
     // have all cliques, sort them by rank
     Collections.sort(cliques, new CliqueRanker(reduced.eliminated));
+    Collections.reverse(cliques);
     
     TreeMap<TreeSet<String>,TreeSet<String>> tree = new TreeMap<TreeSet<String>,TreeSet<String>>(LexicalCompare.<String>comparatorInstance());
     tree.put(cliques.get(0), null);
@@ -70,7 +79,7 @@ public class ConfigurationSearch implements Program.Search<ConfigurationSearch> 
         }
       }
       if (maxShareCount < 1) throw new RuntimeException();
-      tree.put(cliques.get(i), maxShare);
+      tree.put(clique, maxShare);
     }
     return tree;
   }
