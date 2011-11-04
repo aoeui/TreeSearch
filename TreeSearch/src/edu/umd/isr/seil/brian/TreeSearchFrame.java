@@ -29,6 +29,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 
 import edu.uci.ics.jung.algorithms.layout.*;
+import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
@@ -36,7 +37,9 @@ import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.layout.LayoutTransition;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import edu.uci.ics.jung.visualization.util.Animator;
 
 import java.awt.Insets;
 import javax.swing.JComboBox;
@@ -46,6 +49,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.collections15.Transformer;
+import org.apache.commons.collections15.functors.ConstantTransformer;
 
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
@@ -78,6 +82,7 @@ public class TreeSearchFrame extends JFrame {
 	private DefaultListModel finishedListModel;
 	private DefaultListModel restListModel;
 	private JTextField twResult;
+	private JList restNodeList;
 
 	/**
 	 * Launch the application.
@@ -126,14 +131,14 @@ public class TreeSearchFrame extends JFrame {
 		contentPane.add(overallPane, BorderLayout.CENTER);
 		Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>(){
 			public Paint transform(String node){
-				return Color.lightGray;
+				return Color.green;
 			}
 		};
 		DefaultModalGraphMouse<String,String> gm = new DefaultModalGraphMouse<String,String>();
-		gm.setMode(ModalGraphMouse.Mode.PICKING);
+		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
 		
 		DefaultModalGraphMouse<String,String> gmTree = new DefaultModalGraphMouse<String,String>();
-		gmTree.setMode(ModalGraphMouse.Mode.PICKING);
+		gmTree.setMode(ModalGraphMouse.Mode.TRANSFORMING);
 		
 		JSplitPane leftSplitPane = new JSplitPane();
 		leftSplitPane.setOneTouchExpandable(true);
@@ -247,7 +252,7 @@ public class TreeSearchFrame extends JFrame {
 		finishedNodeList.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Process Finished", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 70, 213)));
 		listPanel.add(new JScrollPane(finishedNodeList));
 		
-		JList restNodeList = new JList();
+		restNodeList = new JList();
 		restListModel = new DefaultListModel();
 		restNodeList.setToolTipText("Parameters to be processed");
 		restNodeList.setModel(restListModel);
@@ -265,14 +270,16 @@ public class TreeSearchFrame extends JFrame {
 		graphViewer.setGraphMouse(gm);
 		graphViewer.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
 		graphViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<String>());
-		graphViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		graphViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.AUTO);
 		
-		treeViewer = new VisualizationViewer<String,String>(new FRLayout<String,String>(paramsDB.getTree()));
+		treeViewer = new VisualizationViewer<String,String>(new TreeLayout<String,String>(paramsDB.getTree()));
 		treeViewer.setToolTipText("Use mouse scroll or drag to zoom in/out or move the whole tree.");
 		treeViewer.setGraphMouse(gmTree);
 		treeViewer.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
 		treeViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<String>());
-		treeViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		treeViewer.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<String, String>());
+		treeViewer.getRenderContext().setArrowFillPaintTransformer(new ConstantTransformer(Color.LIGHT_GRAY));
+		treeViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.AUTO);
 		
 		GraphZoomScrollPane graphShowPane = new GraphZoomScrollPane(graphViewer);
 		GraphZoomScrollPane treeShowPane = new GraphZoomScrollPane(treeViewer);
@@ -345,7 +352,7 @@ public class TreeSearchFrame extends JFrame {
 		});
 		opMode.setMaximumSize(new Dimension(50, 1800));
 		opMode.setToolTipText("Select to use the mouse to move the whole graph, or pick on node");
-		opMode.setModel(new DefaultComboBoxModel(new String[] {"Pick Node","Drag Graph"}));
+		opMode.setModel(new DefaultComboBoxModel(new String[] {"Drag Graph", "Pick Node"}));
 		opMode.setSelectedIndex(0);
 		graphCtrlPanel.add(opMode);
 		
@@ -365,7 +372,7 @@ public class TreeSearchFrame extends JFrame {
 		});
 		opTreeMode.setMaximumSize(new Dimension(50, 1800));
 		opTreeMode.setToolTipText("Select to use the mouse to move the whole graph, or pick on node");
-		opTreeMode.setModel(new DefaultComboBoxModel(new String[] {"Pick Node", "Drag Graph"}));
+		opTreeMode.setModel(new DefaultComboBoxModel(new String[] {"Drag Graph", "Pick Node"}));
 		opTreeMode.setSelectedIndex(0);
 		treeCtrlPanel.add(opTreeMode);
 		
@@ -467,18 +474,20 @@ public class TreeSearchFrame extends JFrame {
 		// Event Listener for "Layout" list in Tree Viewer Panel
 		treeLayoutOption.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				if(paramsDB.getTree().getVertexCount() == 0){
-					return;
-				}
+			    LayoutTransition<String, String> lt;
+			    DelegateTree<String,String> tree = paramsDB.getTree();
 				JComboBox evSrc = (JComboBox)e.getSource();
 				String modeStr = (String)evSrc.getSelectedItem();
 				if(modeStr.equalsIgnoreCase("TreeLayout")){
-					treeViewer.setGraphLayout(new TreeLayout<String,String>(paramsDB.getTree()));
+					lt = new LayoutTransition<String, String>(treeViewer, treeViewer.getGraphLayout(), new TreeLayout<String,String>(tree));
 				}else if(modeStr.equalsIgnoreCase("BalloonLayout")){
-					treeViewer.setGraphLayout(new BalloonLayout<String,String>(paramsDB.getTree()));
-				}else if(modeStr.equalsIgnoreCase("RadialTreeLayout")){
-					treeViewer.setGraphLayout(new RadialTreeLayout<String,String>(paramsDB.getTree()));
+				    lt = new LayoutTransition<String, String>(treeViewer, treeViewer.getGraphLayout(), new BalloonLayout<String,String>(tree));
+				}else{
+				    lt = new LayoutTransition<String, String>(treeViewer, treeViewer.getGraphLayout(), new RadialTreeLayout<String,String>(tree));
 				}
+				Animator animator = new Animator(lt);
+				animator.start();
+				treeViewer.getRenderContext().getMultiLayerTransformer().setToIdentity();
 			}
 		});
 		
@@ -627,36 +636,22 @@ public class TreeSearchFrame extends JFrame {
 				
 				boolean success = paramsDB.parse(funcTableModel,TreeSearchFrame.this); // Parse the user input
 				if(success){
-					// Update the list of unprocessed and processed parameters
-					restListModel.removeAllElements();
-					finishedListModel.removeAllElements();
-					for(String item:paramsDB.getRestParams()){
-						restListModel.addElement(item);
-					}
-					for(String item:paramsDB.getFinishedParams()){
-						finishedListModel.addElement(item);
-					}
-					
-					// Update the graph viewer
-					graphViewer.getGraphLayout().setGraph(paramsDB.getGraph());
-					graphViewer.repaint();
-					
-					// Update the tree viewer
-					treeViewer.getGraphLayout().setGraph(paramsDB.getTree());
-					treeViewer.repaint();
+					refreshViewers();
 				}
 			}
 		});
 		
 		// Event Listener for "Continue" button
 		btnContinue.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {			
+			public void mouseClicked(MouseEvent e) {	
 				if(restListModel.isEmpty()){
 					JOptionPane.showMessageDialog(TreeSearchFrame.this, "No parameter needs to be processed", "No Parameter", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				
 				// Begin to process this parameter
+				paramsDB.nextStep((String)restNodeList.getSelectedValue());
+				refreshViewers();
 			}
 		});
 		
@@ -669,9 +664,38 @@ public class TreeSearchFrame extends JFrame {
 				}
 				
 				// Begin to roll back this parameter
+				paramsDB.rollback();
+				refreshViewers();
 			}
 		});
 	}
+
+  private void refreshViewers() {
+    // Update the list of unprocessed and processed parameters
+    restListModel.removeAllElements();
+    finishedListModel.removeAllElements();
+    for(String item:paramsDB.getRestParams()){
+        restListModel.addElement(item);
+    }
+    for(String item:paramsDB.getFinishedParams()){
+        finishedListModel.addElement(item);
+    }
+    
+    if(!restListModel.isEmpty()){
+        restNodeList.setSelectedIndex(0);
+    }
+    
+    // Update the tree width
+    twResult.setText(paramsDB.getTreeWidth());
+    
+    // Update the graph viewer
+    graphViewer.getGraphLayout().setGraph(paramsDB.getGraph());
+    graphViewer.repaint();
+    
+    // Update the tree viewer
+    treeViewer.getGraphLayout().setGraph(paramsDB.getTree());
+    treeViewer.repaint();
+  }
 }
 
 

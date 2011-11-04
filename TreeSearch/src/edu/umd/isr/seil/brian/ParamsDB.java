@@ -1,5 +1,6 @@
 package edu.umd.isr.seil.brian;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.HashSet;
@@ -108,6 +109,8 @@ public class ParamsDB {
 	public DelegateTree<String,String> getTree(){
 		if(manager != null){
 			constructTree();
+		}else{
+		    tree.addVertex("Empty Tree!");
 		}
 		return tree;
 	}
@@ -115,6 +118,7 @@ public class ParamsDB {
 	private void constructTree(){
 		TreeMap<TreeSet<String>,TreeSet<String>> edgeList = manager.getCurrentTree();
 		DirectedSparseGraph<String, String> rawTree = new DirectedSparseGraph<String, String>();
+		String root = null;
 		for(Map.Entry<TreeSet<String>,TreeSet<String>> entry : edgeList.entrySet()){
 			TreeSet<String> childSet = entry.getKey();
 			TreeSet<String> parentSet = entry.getValue();
@@ -124,9 +128,12 @@ public class ParamsDB {
 				String parentName = parentSet.toString();
 				rawTree.addVertex(parentName);
 				rawTree.addEdge(parentName+"2"+childName, parentName, childName, EdgeType.DIRECTED);
+			}else{
+			    root = childName;
 			}
 		}
 		tree = new DelegateTree<String,String>(rawTree);
+		tree.setRoot(root);
 	}
 	
 	private void constructGraph(){
@@ -135,12 +142,12 @@ public class ParamsDB {
 		for(String name : config.nodes.keys()){
 			if(!config.eliminated.containsKey(name)){
 				graph.addVertex(name);
-				for(String nbr : config.nodes.get(name).neighbors){
-					if(name.compareTo(nbr) < 0){
-						graph.addEdge(name+"2"+nbr, name,nbr);
-					}else if(name.compareTo(nbr) > 0){
-						graph.addEdge(nbr+"2"+name, nbr,name);
-					}
+			}
+			for(String nbr : config.nodes.get(name).neighbors){
+				if(name.compareTo(nbr) < 0){
+					graph.addEdge(name+"2"+nbr, name,nbr);
+				}else if(name.compareTo(nbr) > 0){
+					graph.addEdge(nbr+"2"+name, nbr,name);
 				}
 			}
 		}
@@ -150,18 +157,23 @@ public class ParamsDB {
 		return new HashSet<String>(manager.getCurrentConfiguration().eliminated.keys());
 	}
 	
-	public HashSet<String> getRestParams(){
-	    Configuration config = manager.getCurrentConfiguration();
-		HashSet<String> result = new HashSet<String>(config.nodes.keys());
-		result.removeAll(config.eliminated.keys());
-		return result;
+	public ArrayList<String> getRestParams(){
+	    return manager.getAvailableChoices();
 	}
 	
-	public double getTreeWidth(){
+	public String getTreeWidth(){
 		if(manager != null){
-			return manager.getWidth();
+			return Double.toString(manager.getWidth());
 		}else{
-			return -1;
+			return "-1";
 		}
+	}
+	
+	public void nextStep(String choice){
+	    manager.setNextChoice(choice);
+	}
+	
+	public void rollback(){
+	    manager.pop();
 	}
 }
