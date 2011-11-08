@@ -249,7 +249,7 @@ public class Configuration {
       boolean[] visited = new boolean[N];
       dfs(visited, 0);
       for (int i = 0; i < N; i++) {
-        if (!visited[i]) throw new RuntimeException("Input graph must be connected.");
+        if (!visited[i]) throw new RuntimeException("Input graph must be connected.\n" + idxToName[0] + " disconnected from " + idxToName[i]);
       }
       RbTree<String,Node> nodes = RbTree.<String,Node>empty();
       for (Map.Entry<String, Integer> entry : nameToIdx.entrySet()) {

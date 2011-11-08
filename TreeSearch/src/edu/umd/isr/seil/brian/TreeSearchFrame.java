@@ -21,6 +21,9 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.JTable;
 import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Component;
@@ -55,16 +58,24 @@ import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedOutputStream;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import javax.swing.JList;
 import java.awt.GridLayout;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+
+import edu.umd.isr.seil.brian.util.Joiner;
 
 public class TreeSearchFrame extends JFrame {
 
@@ -159,6 +170,10 @@ public class TreeSearchFrame extends JFrame {
 		JButton btnOpen = new JButton("Open");
 		btnOpen.setToolTipText("Load data from a file");
 		editPanel.add(btnOpen);
+		
+		JButton btnImport = new JButton("Import");
+		btnImport.setToolTipText("Import from a text file");
+		editPanel.add(btnImport);
 		
 		JButton btnSave = new JButton("Save");
 		btnSave.setToolTipText("Save data to a file");
@@ -590,6 +605,30 @@ public class TreeSearchFrame extends JFrame {
 			}
 		});
 		
+		btnImport.addActionListener(new ActionListener() {
+		  public void actionPerformed(ActionEvent e) {
+		    funcTableModel.setRowCount(0);  // blank the table
+		    JFileChooser fc = new JFileChooser(curDir);
+		    int choice = fc.showOpenDialog(TreeSearchFrame.this);
+		    if (choice == JFileChooser.APPROVE_OPTION) {
+		      try {
+		        TreeMap<String,TreeSet<String>> data = parseFile(fc.getSelectedFile());
+		        int count = 1;
+		        for (Map.Entry<String, TreeSet<String>> entry : data.entrySet()) {
+		          String[] row = new String[3];
+		          row[0] = Integer.toString(count++);
+		          row[1] = entry.getKey();
+		          row[2] = Joiner.join(entry.getValue(),","); 
+		          funcTableModel.addRow(row);
+		        }
+		      } catch (IOException eIo) {
+                JOptionPane.showMessageDialog(TreeSearchFrame.this, "Fail to open the file: "+ curDir.getAbsolutePath() + ". Please make sure you have enough permissions.", "File Open Failed",JOptionPane.ERROR_MESSAGE);
+                eIo.printStackTrace();
+		      }
+		    }
+		  }
+		});
+		
 		// Event Listener for "Save" button
 		btnSave.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
@@ -695,6 +734,23 @@ public class TreeSearchFrame extends JFrame {
     // Update the tree viewer
     treeViewer.getGraphLayout().setGraph(paramsDB.getTree());
     treeViewer.repaint();
+  }
+  
+  private TreeMap<String,TreeSet<String>> parseFile(File file) throws IOException {
+    TreeMap<String,TreeSet<String>> constraints = new TreeMap<String,TreeSet<String>>();
+    
+    BufferedReader reader = new BufferedReader(new FileReader(file));
+    String next = reader.readLine();
+    while (next != null) {
+      String[] strings = next.split("\\s+");
+      TreeSet<String> vars = new TreeSet<String>();
+      for (int i = 1; i < strings.length; i++) {
+        vars.add(strings[i]);
+      }
+      constraints.put(strings[0],vars);
+      next = reader.readLine();
+    }
+    return constraints;
   }
 }
 
