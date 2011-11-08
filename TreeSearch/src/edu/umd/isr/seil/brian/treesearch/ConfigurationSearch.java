@@ -52,6 +52,7 @@ public class ConfigurationSearch implements Program.Search<ConfigurationSearch> 
         if (i == j) continue;
         
         if (cliques.get(j).containsAll(cliques.get(i))) {
+          System.out.println("Removing clique " + cliques.get(i) + " contained in " + cliques.get(j));
           cliques.remove(i);
           break;
         }
@@ -100,15 +101,15 @@ public class ConfigurationSearch implements Program.Search<ConfigurationSearch> 
     }
     
     private int getRank(TreeSet<String> set) {
-      int minRank = Integer.MAX_VALUE;
+      int maxRank = Integer.MIN_VALUE;
       
       for (String str : set) {
         int currRank = ranks.get(str);
-        if (currRank < minRank) {
-          minRank = currRank;
+        if (currRank > maxRank) {
+          maxRank = currRank;
         }
       }
-      return minRank;
+      return maxRank;
     }
   }
   

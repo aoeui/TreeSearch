@@ -233,7 +233,24 @@ public class Configuration {
       }
     }
     
+    void dfs(boolean[] visited, int next) {
+      if (visited[next]) return;
+
+      visited[next] = true;
+      for (int i = 0; i < N; i++) {
+        if (connectivity[next][i]) {
+          dfs(visited, i);
+        }
+      }
+    }
+    
     public Configuration build() {
+      // First check that the graph is connected
+      boolean[] visited = new boolean[N];
+      dfs(visited, 0);
+      for (int i = 0; i < N; i++) {
+        if (!visited[i]) throw new RuntimeException("Input graph must be connected.");
+      }
       RbTree<String,Node> nodes = RbTree.<String,Node>empty();
       for (Map.Entry<String, Integer> entry : nameToIdx.entrySet()) {
         ArrayList<String> neighbors = new ArrayList<String>();
